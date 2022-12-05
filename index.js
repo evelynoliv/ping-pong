@@ -42,5 +42,21 @@ let systemY = 0;
 
 
 //SPEED
-let speedBall, speedSystem, seedPlayer;
+let speedBall, speedSystem, speedPlayer;
 
+
+//CONTROLS
+
+let score = 0;
+let keyboard;
+match = false
+
+function playerControl() {
+    if (jogo) {
+        posPlayerY += speedPlayer * keyControl;
+        if (((posPlayerY + barH) >= areaH) || ((posPlayerY) <= 0)) {
+            posPlayerY += (speedPlayer * keyControl) * (-1);
+        }
+        gamePlayer.style.top = posPlayerY + 'px';
+    }
+}
