@@ -5,32 +5,32 @@ let vcpu;
 let vjogador;
 let vPainelTxtPontos;
 
-//Controle de animacao
+//AANIMATION CONTROLS
 let frames;
 
-//Posicoes
+//POSITIONS
 let posBolaX, posBolaY;
 let posJogadorX, posJogadorY;
 let posCpuX, posCpuY;
 
-//Direcao de acordo com a tecla
+//DIRECTION ACCORDING TO KEY
 let dirJy;
 
-//Direcoes iniciais
+//INITIAL DIRECTIONS
 let posJogIniY = 180, posJogIniX = 10, posCpuIniY = 180, posCpuIniX = 930, posBolaIniX = 475, posBolaIniY = 240;
 
-//Tamanhos
+//AREA
 let campoX = 0, campoY = 0, campoW = 960, campoH = 500;
 let barraW = 20, barraH = 140, bolaW = 20, bolaH = 20;
 
-//Direcao
+//BALL DIRECTION
 let bolaX, bolaY;
 let cpuY = 0;
 
-//Velocidade
+//SPEED
 let velBola, velCpu, velJogador;
 
-//Controle
+//CONTROLS
 let pontos = 0;
 let tecla;
 jogo = false;
