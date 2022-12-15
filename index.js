@@ -1,189 +1,207 @@
-//ELEMENTS
-let iniciarJogo;
-let vbola;
-let vcpu;
-let vjogador;
-let vPainelTxtPontos;
+const canvas = document.getElementById("pong");
 
-//AANIMATION CONTROLS
-let frames;
+// getContext of canvas = methods and properties to draw and do a lot of thing to the canvas
+const ctx = canvas.getContext('2d');
 
-//POSITIONS
-let posBolaX, posBolaY;
-let posJogadorX, posJogadorY;
-let posCpuX, posCpuY;
+// load sounds
+let hit = new Audio();
+let wall = new Audio();
+let userScore = new Audio();
+let comScore = new Audio();
 
-//DIRECTION ACCORDING TO KEY
-let dirJy;
+hit.src = "sounds/hit.mp3";
+wall.src = "sounds/wall.mp3";
+comScore.src = "sounds/comScore.mp3";
+userScore.src = "sounds/userScore.mp3";
 
-//INITIAL DIRECTIONS
-let posJogIniY = 180, posJogIniX = 10, posCpuIniY = 180, posCpuIniX = 930, posBolaIniX = 475, posBolaIniY = 240;
+// Ball object
+const ball = {
+    x : canvas.width/2,
+    y : canvas.height/2,
+    radius : 10,
+    velocityX : 5,
+    velocityY : 5,
+    speed : 7,
+    color : "WHITE"
+}
 
-//AREA
-let campoX = 0, campoY = 0, campoW = 960, campoH = 500;
-let barraW = 20, barraH = 140, bolaW = 20, bolaH = 20;
+// User Paddle
+const user = {
+    x : 0, // left side of canvas
+    y : (canvas.height - 100)/2, // -100 the height of paddle
+    width : 10,
+    height : 100,
+    score : 0,
+    color : "WHITE"
+}
 
-//BALL DIRECTION
-let bolaX, bolaY;
-let cpuY = 0;
+// COM Paddle
+const com = {
+    x : canvas.width - 10, // - width of paddle
+    y : (canvas.height - 100)/2, // -100 the height of paddle
+    width : 10,
+    height : 100,
+    score : 0,
+    color : "WHITE"
+}
 
-//SPEED
-let velBola, velCpu, velJogador;
+// NET
+const net = {
+    x : (canvas.width - 2)/2,
+    y : 0,
+    height : 10,
+    width : 2,
+    color : "WHITE"
+}
 
-//CONTROLS
-let pontos = 0;
-let tecla;
-jogo = false;
+// draw a rectangle, will be used to draw paddles
+function drawRect(x, y, w, h, color){
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, w, h);
+}
 
-function controlaJog() {
-  if (jogo) {
-    posJogadorY += velJogador * dirJy;
-    if (((posJogadorY + barraH) >= campoH) || ((posJogadorY) <= 0)) {
-      posJogadorY += (velJogador * dirJy) * (-1);
+// draw circle, will be used to draw the ball
+function drawArc(x, y, r, color){
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x,y,r,0,Math.PI*2,true);
+    ctx.closePath();
+    ctx.fill();
+}
+
+// listening to the mouse
+canvas.addEventListener("mousemove", getMousePos);
+
+function getMousePos(evt){
+    let rect = canvas.getBoundingClientRect();
+    
+    user.y = evt.clientY - rect.top - user.height/2;
+}
+
+// when COM or USER scores, we reset the ball
+function resetBall(){
+    ball.x = canvas.width/2;
+    ball.y = canvas.height/2;
+    ball.velocityX = -ball.velocityX;
+    ball.speed = 7;
+}
+
+// draw the net
+function drawNet(){
+    for(let i = 0; i <= canvas.height; i+=15){
+        drawRect(net.x, net.y + i, net.width, net.height, net.color);
     }
-    vjogador.style.top = posJogadorY + 'px';
-  }
 }
 
-function controlaCpu() {
-  if (jogo) {
-    if ((posBolaX > (campoW / 2)) && (bolaX > 0)) {
-      //movimentar cpu
-      if (((posBolaY + (bolaH / 2)) > ((posCpuY + (barraH / 2))) + velCpu)) {
-        //mover para baixo
-        if ((posCpuY + barraH) <= campoH) {
-          posCpuY += velCpu;
-        }
-      } else if ((posBolaY + (bolaH / 2)) < (posCpuY + (barraH / 2)) - velCpu) {
-        //mover para cima
-        if (posCpuY >= 0) {
-          posCpuY -= velCpu;
-        }
-      }
-    } else {
-      //posicionar cpu no centro
-      if ((posCpuY + (barraH / 2)) < (campoH / 2)) {
-        posCpuY += velCpu;
-      } else if ((posCpuY + (barraH / 2)) > (campoH / 2)) {
-        posCpuY -= velCpu;
-      }
+// draw text
+function drawText(text,x,y){
+    ctx.fillStyle = "#FFF";
+    ctx.font = "75px fantasy";
+    ctx.fillText(text, x, y);
+}
+
+// collision detection
+function collision(b,p){
+    p.top = p.y;
+    p.bottom = p.y + p.height;
+    p.left = p.x;
+    p.right = p.x + p.width;
+    
+    b.top = b.y - b.radius;
+    b.bottom = b.y + b.radius;
+    b.left = b.x - b.radius;
+    b.right = b.x + b.radius;
+    
+    return p.left < b.right && p.top < b.bottom && p.right > b.left && p.bottom > b.top;
+}
+
+// update function, the function that does all calculations
+function update(){
+    
+    // change the score of players, if the ball goes to the left "ball.x<0" computer win, else if "ball.x > canvas.width" the user win
+    if( ball.x - ball.radius < 0 ){
+        com.score++;
+        comScore.play();
+        resetBall();
+    }else if( ball.x + ball.radius > canvas.width){
+        user.score++;
+        userScore.play();
+        resetBall();
     }
-    vcpu.style.top = posCpuY + 'px';
-  }
-}
-
-function controlaBola() {
-  //movimentacao da bola
-  posBolaX += velBola * bolaX;
-  posBolaY += velBola * bolaY;
-
-  //colisao com jogador
-  if ((posBolaX <= posJogadorX + barraW) && ((posBolaY + bolaH >= posJogadorY) && (posBolaY <= posJogadorY + barraH))) {
-    bolaY = (((posBolaY + (bolaH / 2)) - (posJogadorY + (barraH / 2))) / 64);
-    bolaX *= - 1;
-  }
-
-  //colisao cpu
-  if ((posBolaX >= posCpuX - barraW) && ((posBolaY + bolaH >= posCpuY) && (posBolaY <= posCpuY + barraH))) {
-    bolaY = (((posBolaY + (bolaH / 2)) - (posCpuY + (barraH / 2))) / 64);
-    bolaX *= - 1;
-  }
-
-  //limites superior e inferior
-  if ((posBolaY >= 480) || (posBolaY <= 0)) {
-    bolaY *= - 1;
-  }
-
-  //saiu da tela pela direita e pela esquerda
-  if (posBolaX >= (campoW - bolaW)) {
-    velBola = 0;
-    posBolaX = posBolaIniX;
-    posBolaY = posBolaIniY;
-    posJogadorY = posJogIniY;
-    posCpuY = posCpuIniY;
-    pontos += 1;
-    vPainelTxtPontos.value = pontos;
-    jogo = false;
-    vjogador.style.top = posJogadorY + 'px';
-    vcpu.style.top = posCpuY + 'px';
-  } else if (posBolaX <= 0) {
-    velBola = 0;
-    posBolaX = posBolaIniX;
-    posBolaY = posBolaIniY;
-    posJogadorY = posJogIniY;
-    posCpuY = posCpuIniY;
-    pontos -= 1;
-    vPainelTxtPontos.value = pontos;
-    jogo = false;
-    vjogador.style.top = posJogadorY + 'px';
-    vcpu.style.top = posCpuY + 'px';
-  }
-
-  vbola.style.top = posBolaY + 'px';
-  vbola.style.left = posBolaX + 'px';
-}
-
-function teclaDw() {
-  tecla = event.keyCode;
-  if (tecla === 38) {
-    dirJy -= 1;
-  } else if (tecla === 40) {
-    dirJy += 1;
-  }
-}
-
-function teclaUp() {
-  tecla = event.keyCode;
-  if (tecla == 38) {
-    dirJy = 0;
-  } else if (tecla == 40) {
-    dirJy = 0;
-  }
-}
-
-function game() {
-  if (jogo) {
-    controlaJog();
-    controlaBola();
-    controlaCpu();
-  }
-  frames = requestAnimationFrame(game);
-}
-
-function iniciaJogo() {
-  if (!jogo) {
-    velBola = velCpu = velJogador = 8;
-    cancelAnimationFrame(frames);
-    jogo = true;
-    dirJy = 0;
-    bolaY = 0;
-    if ((Math.random() * 10) < 5) {
-      bolaX = - 1;
-    } else {
-      bolaX = 1;
+    
+    // the ball has a velocity
+    ball.x += ball.velocityX;
+    ball.y += ball.velocityY;
+    
+    // computer plays for itself, and we must be able to beat it
+    // simple AI
+    com.y += ((ball.y - (com.y + com.height/2)))*0.1;
+    
+    // when the ball collides with bottom and top walls we inverse the y velocity.
+    if(ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height){
+        ball.velocityY = -ball.velocityY;
+        wall.play();
     }
-
-    posBolaX = posBolaIniX;
-    posBolaY = posBolaIniY;
-    posJogadorY = posJogIniY;
-    posJogadorX = posJogIniX;
-    posCpuX = posCpuIniX;
-    posCpuY = posCpuIniY;
-
-    game();
-  }
+    
+    // we check if the paddle hit the user or the com paddle
+    let player = (ball.x + ball.radius < canvas.width/2) ? user : com;
+    
+    // if the ball hits a paddle
+    if(collision(ball,player)){
+        // play sound
+        hit.play();
+        // we check where the ball hits the paddle
+        let collidePoint = (ball.y - (player.y + player.height/2));
+        // normalize the value of collidePoint, we need to get numbers between -1 and 1.
+        // -player.height/2 < collide Point < player.height/2
+        collidePoint = collidePoint / (player.height/2);
+        
+        // when the ball hits the top of a paddle we want the ball, to take a -45degees angle
+        // when the ball hits the center of the paddle we want the ball to take a 0degrees angle
+        // when the ball hits the bottom of the paddle we want the ball to take a 45degrees
+        // Math.PI/4 = 45degrees
+        let angleRad = (Math.PI/4) * collidePoint;
+        
+        // change the X and Y velocity direction
+        let direction = (ball.x + ball.radius < canvas.width/2) ? 1 : -1;
+        ball.velocityX = direction * ball.speed * Math.cos(angleRad);
+        ball.velocityY = ball.speed * Math.sin(angleRad);
+        
+        // speed up the ball everytime a paddle hits it.
+        ball.speed += 0.1;
+    }
 }
 
-function inicializa() {
-  // velBola = velCpu = velJogador = 8;
-  iniciarJogo = document.getElementById('btIniciar');
-  iniciarJogo.addEventListener('click', iniciaJogo);
-  vjogador = document.getElementById('dvJogador');
-  vcpu = document.getElementById('dvCPU');
-  vbola = document.getElementById('dvBola');
-  vPainelTxtPontos = document.getElementById('txtPontos');
-  document.addEventListener('keydown', teclaDw);
-  document.addEventListener('keyup', teclaUp);
+// render function, the function that does al the drawing
+function render(){
+    
+    // clear the canvas
+    drawRect(0, 0, canvas.width, canvas.height, "#000");
+    
+    // draw the user score to the left
+    drawText(user.score,canvas.width/4,canvas.height/5);
+    
+    // draw the COM score to the right
+    drawText(com.score,3*canvas.width/4,canvas.height/5);
+    
+    // draw the net
+    drawNet();
+    
+    // draw the user's paddle
+    drawRect(user.x, user.y, user.width, user.height, user.color);
+    
+    // draw the COM's paddle
+    drawRect(com.x, com.y, com.width, com.height, com.color);
+    
+    // draw the ball
+    drawArc(ball.x, ball.y, ball.radius, ball.color);
 }
+function game(){
+    update();
+    render();
+}
+// number of frames per second
+let framePerSecond = 50;
 
-window.addEventListener('load', inicializa);
+//call the game function 50 times every 1 Sec
+let loop = setInterval(game,1000/framePerSecond);
