@@ -22,6 +22,10 @@ let posPlayerX, posPlayerY;
 let posSystemX, posSystemY;
 
 
+//DRECTION ACCORDING KEY
+let dirJy;
+
+
 //INITIAL DIRECTIONS
 let playerInitialY = 180;
 let playerInitialX = 10;
@@ -48,9 +52,8 @@ let speedBall, speedSystem, speedPlayer;
 
 
 //CONTROLS
-
 let score = 0;
-let keyboard;
+let key;
 match = false
 
 function playerControl() {
@@ -89,13 +92,90 @@ function systemControl() {
 }
 
 function ballControl() {
+  //BALL MOVEMENT
   posBallX += speedBall * ballX
   posBallY += speedBall * ballY
 
+  //PLAYER SIDE
   if ((posBallX <= posPlayerX + barW) && ((posBallY + ballH >= posPlayerY) && (posBallY <= posPlayerY + barH))) {
     ballY = (((posBallY + (ballH / 2)) - (posPlayerY + (barH / 2))) / 64);
     ballX *= -1;
+  }
 
+  //SYSTEM SIDE
+  if ((posBallX >= posSystemX - barW) && ((posBallY + ballH >= posSystemY) && (posBallY <= posSystemY + barH))) {
+    ballY = (((posBallY + (ballH / 2)) - (posSystemY + (barH / 2))) / 64);
+    ballX *= - 1;
+  }
+
+  // TABLE LIMIT
+  if ((posBallY >= 480) || (posBallY <= 0)) {
+    ballY *= - 1;
+  }
+
+  // MOVE FROM RIGHT TO LEFT
+
+  if (posBallX >= (areaW - ballW)) {
+    speedBall = 0;
+    posBallX = ballInitialX;
+    posBallY = ballInitialY;
+    posPlayerY = playerInitialY;
+    posSystemY = systemInitialY;
+    score += 1;
+    gameScoreboard.value = score;
+    match = false;
+    gamePlayer.style.top = posPlayerY + 'px';
+    gameSystem.style.top = posSystemY + 'px';
+  } else if (posBallX <= 0) {
+    speedBall = 0;
+    posBallX = ballInitialX;
+    posBallY = ballInitialY;
+    posPlayerY = playerInitialY;
+    posSystemY = systemInitialY
+    score -= 1;
+    gameScoreboard.value = score;
+    match = false;
+    gamePlayer.style.top = posPlayerY + 'px';
+    gameSystem.style.top = posSystemY + 'px';
+  }
+
+  gameBall.style.top = posBallY + 'px';
+  gameBall.style.left = posBallX + 'px';
+}
+
+function keyUp() {
+  key = event.keyCode;
+  if (key === 38) {
+    dirJy -= 1;
+  } else if (key === 40) {
+    dirJy += 1;
   }
 }
+
+function keyDown() {
+  key = event.keyCode;
+  if (key === 38) {
+    dirJy -= 1;
+  } else if (key === 40) {
+    dirJy += 1;
+  }
+}
+
+function game {
+  if (match) {
+    playerControl();
+    ballControl();
+    systemControl();
+  }
+  frames = requestAnimationFrame(match);
+}
+
+
+
+
+
+
+
+
+
 
