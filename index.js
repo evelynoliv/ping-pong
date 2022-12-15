@@ -1,3 +1,5 @@
+console.log(typeof (null))
+
 // ELEMENTS
 let gameStart;
 let gameBall;
@@ -15,7 +17,7 @@ let frames;
 
 
 //POSITIONS
-let posBallX, posBballY;
+let posBallX, posBallY;
 let posPlayerX, posPlayerY;
 let posSystemX, posSystemY;
 
@@ -52,37 +54,48 @@ let keyboard;
 match = false
 
 function playerControl() {
-    if (match) {
-        posPlayerY += speedPlayer * keyControl;
-        if (((posPlayerY + barH) >= areaH) || ((posPlayerY) <= 0)) {
-            posPlayerY += (speedPlayer * keyControl) * (-1);
-        }
-        gamePlayer.style.top = posPlayerY + 'px';
+  if (match) {
+    posPlayerY += speedPlayer * keyControl;
+    if (((posPlayerY + barH) >= areaH) || ((posPlayerY) <= 0)) {
+      posPlayerY += (speedPlayer * keyControl) * (-1);
     }
+    gamePlayer.style.top = posPlayerY + 'px';
+  }
 }
 
 function systemControl() {
-    if (match) {
-        if((posBballY > (areaW / 2)) && (ballX > 0)) {
-            if (((posBballY + (ballH / 2)) > ((posSystemY + (barH / 2))) + speedSystem)) {
-                if ((posSystemY + barH) <= areaH) {
-                    posSystemY += speedSystem;
-                  }
-                } else if ((posBallY + (ballH / 2)) < (posSystemY + (barH / 2)) - speedSystem) {
-                    
-                    if (posSystemY >= 0) {
-                      posSystemY -= speedSystem;
-                    }
-                  }
-                } else {
-                  
-                  if ((posSystemY + (barH / 2)) < (H / 2)) {
-                    posSystemY += speedSystem;
-                  } else if ((posCpuY + (barH / 2)) > (areaH / 2)) {
-                    posSystemY -= speedSystem;
-                  }
-                }
-                gameSystem.style.top = posSystemY + 'px';
-              }
-            }
-            
+  if (match) {
+    if ((posBballY > (areaW / 2)) && (ballX > 0)) {
+      if (((posBballY + (ballH / 2)) > ((posSystemY + (barH / 2))) + speedSystem)) {
+        if ((posSystemY + barH) <= areaH) {
+          posSystemY += speedSystem;
+        }
+      } else if ((posBallY + (ballH / 2)) < (posSystemY + (barH / 2)) - speedSystem) {
+
+        if (posSystemY >= 0) {
+          posSystemY -= speedSystem;
+        }
+      }
+    } else {
+
+      if ((posSystemY + (barH / 2)) < (H / 2)) {
+        posSystemY += speedSystem;
+      } else if ((posCpuY + (barH / 2)) > (areaH / 2)) {
+        posSystemY -= speedSystem;
+      }
+    }
+    gameSystem.style.top = posSystemY + 'px';
+  }
+}
+
+function ballControl() {
+  posBallX += speedBall * ballX
+  posBallY += speedBall * ballY
+
+  if ((posBallX <= posPlayerX + barW) && ((posBallY + ballH >= posPlayerY) && (posBallY <= posPlayerY + barH))) {
+    ballY = (((posBallY + (ballH / 2)) - (posPlayerY + (barH / 2))) / 64);
+    ballX *= -1;
+
+  }
+}
+
