@@ -1,4 +1,4 @@
-# ping-pong 🏓
+# Ping-Pong 🏓
 
 # Technologies used
 - `1`: Javascript
